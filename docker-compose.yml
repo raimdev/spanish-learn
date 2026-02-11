@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - db-data:/app/data
+    environment:
+      - DB_PATH=/app/data/spanish_learn.db
+      - CORS_ORIGIN=http://localhost:5173
+      - PORT=8080
+      - MIGRATIONS_DIR=/app/db/migrations
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:8080
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
