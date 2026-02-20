@@ -1,10 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { VocabularyProvider } from '../context/VocabularyContext';
 
 export default function Layout() {
   const { user, logout } = useAuth();
 
   return (
+    <VocabularyProvider>
     <div className="app">
       <nav className="navbar">
         <div className="nav-brand">
@@ -27,5 +29,6 @@ export default function Layout() {
         <Outlet />
       </main>
     </div>
+    </VocabularyProvider>
   );
 }

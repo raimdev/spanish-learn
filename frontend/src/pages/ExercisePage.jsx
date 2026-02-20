@@ -13,16 +13,24 @@ export default function ExercisePage() {
   const [exercise, setExercise] = useState(null);
   const [answer, setAnswer] = useState('');
   const [result, setResult] = useState(null);
+  const [gaveUp, setGaveUp] = useState(false);
 
   useEffect(() => {
     get(`/api/exercises/${id}`).then(setExercise).catch(console.error);
     setAnswer('');
     setResult(null);
+    setGaveUp(false);
   }, [id]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     const data = await post(`/api/exercises/${id}/submit`, { answer });
+    setResult(data);
+  }
+
+  async function handleGiveUp() {
+    const data = await post(`/api/exercises/${id}/submit`, { answer: '' });
+    setGaveUp(true);
     setResult(data);
   }
 
@@ -33,6 +41,10 @@ export default function ExercisePage() {
   }
 
   if (!exercise) return <div className="loading">Loading...</div>;
+
+  const resultClass = result
+    ? result.correct ? 'result-correct' : gaveUp ? 'result-gaveup' : 'result-incorrect'
+    : '';
 
   return (
     <div className="exercise-page">
@@ -69,24 +81,29 @@ export default function ExercisePage() {
           </div>
 
           {!result && (
-            <button type="submit" className="btn-primary" disabled={!answer.trim()}>
-              Submit Answer
-            </button>
+            <div>
+              <button type="submit" className="btn-primary" disabled={!answer.trim()}>
+                Submit Answer
+              </button>
+              <button type="button" className="btn-give-up" onClick={handleGiveUp}>
+                Give Up
+              </button>
+            </div>
           )}
         </form>
 
         {result && (
-          <div className={`exercise-result ${result.correct ? 'result-correct' : 'result-incorrect'}`}>
-            <div className="result-icon">{result.correct ? 'Correct!' : 'Incorrect'}</div>
-            {!result.correct && (
-              <div className="result-answer">
-                Correct answer: <strong>{result.correct_answer}</strong>
-              </div>
-            )}
+          <div className={`exercise-result ${resultClass}`}>
+            <div className="result-icon">
+              {result.correct ? 'Correct!' : gaveUp ? 'Gave Up' : 'Incorrect'}
+            </div>
+            <div className="result-answer">
+              Correct answer: <strong>{result.correct_answer}</strong>
+            </div>
             <div className="result-actions">
               <Link to="/exercises" className="btn-secondary">Back to Exercises</Link>
               <button
-                onClick={() => { setAnswer(''); setResult(null); }}
+                onClick={() => { setAnswer(''); setResult(null); setGaveUp(false); }}
                 className="btn-primary"
               >
                 Try Again
